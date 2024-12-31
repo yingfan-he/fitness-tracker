@@ -2,6 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
+import WorkoutsPage from "./pages/WorkoutsPage";
+import CreatinePage from "./pages/CreatinePage";
+import ProfilePage from "./pages/ProfilePage";
+import RegisterPage from "./pages/RegisterPage";
+
+
 
 
 // <Router>                    // The entire building
@@ -25,6 +31,10 @@ function App() {
                     {/* Route maps a URL path to a component */}
                     {/* When path is "/", show HomePage component */}
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/workouts" element={<WorkoutsPage />} />
+                    <Route path="/creatine" element={<CreatinePage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
                 </Routes>
             </div>
         </Router>
