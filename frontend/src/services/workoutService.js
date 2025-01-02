@@ -19,7 +19,15 @@ const workoutService = {
     getWorkoutsByMuscleGroup: async (muscleGroup) => {
         const response = await axios.get(`${BASE_URL}/muscle/${muscleGroup}`);
         return response.data;
+    },
+
+    // Delete workout by workoutID
+    deleteWorkout: async (workoutId) => {
+        const response = await axios.delete(`${BASE_URL}/${workoutId}`);
+        return response.data;
     }
 };
+
+//
 
 export default workoutService;

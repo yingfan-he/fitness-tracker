@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface WorkoutRepository extends JpaRepository<Workout, Long> {
-    List<Workout> findByUser(User user);
+    List<Workout> findByUserUserId(Long userId);
     List<Workout> findByMuscleGroup(MuscleGroup muscleGroup);
     List<Workout> findByDateBetween(Date startDate, Date endDate);
     List<Workout> findByUserAndMuscleGroup(User user, MuscleGroup muscleGroup);

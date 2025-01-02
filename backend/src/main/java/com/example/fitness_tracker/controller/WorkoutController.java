@@ -55,8 +55,8 @@ public class WorkoutController {
 
     // Get workouts by user
     @GetMapping("/user/{userId}")
-    public List<Workout> getWorkoutsByUser(@PathVariable User user) {
-        return workoutService.getWorkoutsByUser(user);
+    public List<Workout> getWorkoutsByUser(@PathVariable Long userId) {
+        return workoutService.getWorkoutsByUser(userId);
     }
     /* Example request:
     GET http://localhost:8080/api/workouts/user/123

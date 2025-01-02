@@ -34,8 +34,8 @@ public class WorkoutService {
         return workoutRepository.findAll();
     }
 
-    public List<Workout> getWorkoutsByUser(User user) {
-        return workoutRepository.findByUser(user);
+    public List<Workout> getWorkoutsByUser(Long userId) {
+        return workoutRepository.findByUserUserId(userId);
     }
 
     public List<Workout> getWorkoutsByMuscleGroup(MuscleGroup muscleGroup) {
