@@ -7,6 +7,7 @@ function WorkoutForm() {
         muscleGroup: '',
         sets: 0,
         reps: 0,
+        weight: 0,
         date: new Date().toISOString().split('T')[0],
         user: {
             userId: 1
@@ -16,6 +17,7 @@ function WorkoutForm() {
     const [message, setMessage] = useState(null);
     const [workouts, setWorkouts] = useState([]);
     const [muscleFilter, setMuscleFilter] = useState('ALL');
+    const [showWeight, setShowWeight] = useState(false); // New state for toggling weight input
 
     useEffect(() => {
         loadWorkouts();
@@ -42,6 +44,11 @@ function WorkoutForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage(null);
+
+        if (formData.sets <= 0 || formData.reps <= 0) {
+            setMessage({ type: 'error', text: 'Sets and reps must be positive numbers'});
+            return;
+        }
         try {
             await workoutService.createWorkout(formData);
             setMessage({ type: 'success', text: 'Workout added successfully!' });
@@ -50,7 +57,8 @@ function WorkoutForm() {
                 workoutName: '',
                 muscleGroup: '',
                 sets: 0,
-                reps: 0
+                reps: 0,
+                weight: 0
             });
             loadWorkouts();
         } catch (error) {
@@ -167,6 +175,7 @@ function WorkoutForm() {
                     <input
                         type="number"
                         name="sets"
+                        min="0"
                         value={formData.sets}
                         onChange={handleChange}
                         required
@@ -179,12 +188,37 @@ function WorkoutForm() {
                     <input
                         type="number"
                         name="reps"
+                        min="0"
                         value={formData.reps}
                         onChange={handleChange}
                         required
                         style={inputStyle}
                     />
                 </div>
+
+                <div>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={showWeight}
+                            onChange={() => setShowWeight(!showWeight)}
+                        />
+                        Include Weight
+                    </label>
+                </div>
+
+                {showWeight && (
+                    <div>
+                        <label>Weight:</label>
+                        <input
+                            type="number"
+                            name="weight"
+                            value={formData.weight}
+                            onChange={handleChange}
+                            style={inputStyle}
+                        />
+                    </div>
+                )}
 
                 <button type="submit" style={buttonStyle}>Add Workout</button>
 

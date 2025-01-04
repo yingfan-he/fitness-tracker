@@ -57,7 +57,6 @@ function CreatineTracker() {
 
     return (
         <div>
-            <h2>Creatine Tracker</h2>
             <div>
                 <p>Today's Date: {creatineData.date}</p>
                 <label>

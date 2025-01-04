@@ -37,7 +37,21 @@ public class Workout {
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
+    @Column
+    private double weight;
+
     public Workout() {
+    }
+
+    public Workout(Long workoutId, String workoutName, MuscleGroup muscleGroup, int sets, int reps, User user, Date date, double weight) {
+        this.workoutId = workoutId;
+        this.workoutName = workoutName;
+        this.muscleGroup = muscleGroup;
+        this.sets = sets;
+        this.reps = reps;
+        this.user = user;
+        this.date = date;
+        this.weight = weight;
     }
 
     public Workout(String workoutName, MuscleGroup muscleGroup, int sets, int reps, User user, Date date) {
@@ -48,6 +62,8 @@ public class Workout {
         this.user = user;
         this.date = date;
     }
+
+
 
 
 }

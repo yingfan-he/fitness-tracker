@@ -56,6 +56,7 @@ public class WorkoutService {
         workoutToUpdate.setSets(workout.getSets());
         workoutToUpdate.setReps(workout.getReps());
         workoutToUpdate.setDate(workout.getDate());
+        workoutToUpdate.setWeight(workout.getWeight());
 
         return workoutRepository.save(workoutToUpdate); // returns the updated Workout object after it gets saved to the DB
     }
