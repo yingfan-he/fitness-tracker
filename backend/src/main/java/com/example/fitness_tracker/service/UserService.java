@@ -43,7 +43,9 @@ public class UserService {  // can only call on methods that I defined in the Us
     }
 
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
     }
 
     // Working on service layer***** 12-23-2024

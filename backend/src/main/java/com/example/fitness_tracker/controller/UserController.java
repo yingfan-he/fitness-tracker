@@ -6,6 +6,8 @@ import com.example.fitness_tracker.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.security.Principal;
 import java.util.List;
 
 // @RestController combines @Controller and @ResponseBody
@@ -21,7 +23,6 @@ public class UserController {
     // Instead of creating it manually with "new UserService()"
     @Autowired
     private UserService userService;
-
 
 
     // all of these json bodies will be created in the frontend
@@ -90,6 +91,11 @@ Content-Type: application/json
     public User getUserByEmail(@PathVariable String email) {
         return userService.getUserByEmail(email);
     }
-}
 
-/* GET http://localhost:8080/api/users/email/john.doe@email.com */
+    /* GET http://localhost:8080/api/users/email/john.doe@email.com */
+
+    @GetMapping("/current")  // get the unique username of whoever is authenticated with Spring Security
+    public User getCurrentUser(Principal principal) {
+        return userService.getUserByEmail(principal.getName());
+    }
+}

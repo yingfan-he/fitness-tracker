@@ -18,7 +18,12 @@ function CreatineTracker() {
 
     const loadCreatineHistory = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/creatine/user/1');
+            const token = localStorage.getItem('jwt');
+            const response = await axios.get('http://localhost:8080/api/creatine/user/1', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
             // Group by date and get latest entry for each date
             const groupedByDate = response.data.reduce((acc, entry) => {
@@ -42,14 +47,22 @@ function CreatineTracker() {
 
     const handleToggle = async () => {
         try {
-            const response = await axios.post("http://localhost:8080/api/creatine",
-                {...creatineData, taken: !creatineData.taken});
-            // toggle the current state of taken back to true or false
+            const token = localStorage.getItem('jwt');
+            const response = await axios.post(
+                "http://localhost:8080/api/creatine",
+                {...creatineData, taken: !creatineData.taken},
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
             setCreatineData(prev => ({
                 ...prev,
                 taken: !prev.taken
             }));
             console.log('Creatine status updated:', response.data);
+            loadCreatineHistory();
         } catch (error) {
             console.error('Failed to update creatine status', error);
         }

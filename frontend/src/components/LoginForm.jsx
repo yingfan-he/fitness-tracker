@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext.jsx';
 
-function RegisterForm() {
+function LoginForm() {
+    const { login } = useAuth();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '',
         email: '',
         password: ''
     });
@@ -21,28 +24,21 @@ function RegisterForm() {
         e.preventDefault();
         setMessage(null);
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/register', formData);
-            console.log('Registration successful:', response.data);
-            setMessage({ type: 'success', text: 'Registration successful!' });
-            setFormData({ name: '', email: '', password: '' }); // Clear form
+            const response = await axios.post('http://localhost:8080/api/auth/login', formData);
+            localStorage.setItem('jwt', response.data.token);
+            login(); // Update the auth state
+            setMessage({ type: 'success', text: 'Login successful!' });
+            setTimeout(() => {
+                navigate('/');
+            }, 1000);
         } catch (error) {
-            console.error('Registration failed:', error);
-            setMessage({ type: 'error', text: 'Registration failed. Please try again.' });
+            console.error('Login failed:', error);
+            setMessage({ type: 'error', text: 'Login failed. Please check your credentials.' });
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
-            <div>
-                <label>Name:</label>
-                <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                />
-            </div>
             <div>
                 <label>Email:</label>
                 <input
@@ -63,7 +59,7 @@ function RegisterForm() {
                     required
                 />
             </div>
-            <button type="submit">Register</button>
+            <button type="submit">Login</button>
             {message && (
                 <div style={{ color: message.type === 'success' ? 'green' : 'red' }}>
                     {message.text}
@@ -73,4 +69,4 @@ function RegisterForm() {
     );
 }
 
-export default RegisterForm;
+export default LoginForm;
