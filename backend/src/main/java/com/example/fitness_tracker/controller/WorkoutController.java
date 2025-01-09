@@ -2,101 +2,185 @@ package com.example.fitness_tracker.controller;
 
 import com.example.fitness_tracker.model.Workout;
 import com.example.fitness_tracker.model.User;
-import com.example.fitness_tracker.model.MuscleGroup;
-import com.example.fitness_tracker.service.WorkoutService;
+import com.example.fitness_tracker.repository.WorkoutRepository;
+import com.example.fitness_tracker.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/workouts")
 public class WorkoutController {
+
     @Autowired
-    private WorkoutService workoutService;
+    private WorkoutRepository workoutRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // Create a new workout
     @PostMapping
-    public Workout createWorkout(@RequestBody Workout workout) {
-        return workoutService.createWorkout(workout);
-    }
-    /* Example request:
-    POST http://localhost:8080/api/workouts
-    Content-Type: application/json
-    {
-        "workoutName": "Bench Press",
-        "muscleGroup": "CHEST",
-        "sets": 3,
-        "reps": 10,
-        "date": "2024-12-28",
-        "user": {
-            "id": 123
+    public ResponseEntity<Workout> createWorkout(@RequestBody Workout workout, Principal principal) {
+        try {
+            // Get the authenticated user's email from the JWT token
+            String email = principal.getName();
+
+            // Fetch the user from the database
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Associate the workout with the user
+            workout.setUser(user);
+
+            // Save the workout
+            Workout createdWorkout = workoutRepository.save(workout);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdWorkout);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-    */
 
-    // Get all workouts
+    // Get all workouts for the authenticated user
     @GetMapping
-    public List<Workout> getAllWorkouts() {
-        return workoutService.getAllWorkouts();
-    }
-    /* Example request:
-    GET http://localhost:8080/api/workouts
-    */
+    public ResponseEntity<List<Workout>> getAllWorkouts(Principal principal) {
+        try {
+            // Get the authenticated user's email from the JWT token
+            String email = principal.getName();
 
-    // Get workout by ID
-    @GetMapping("/{id}")
-    public Workout getWorkoutById(@PathVariable Long id) {
-        return workoutService.getWorkoutById(id);
-    }
-    /* Example request:
-    GET http://localhost:8080/api/workouts/123
-    */
+            // Fetch the user from the database
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // Get workouts by user
-    @GetMapping("/user/{userId}")
-    public List<Workout> getWorkoutsByUser(@PathVariable Long userId) {
-        return workoutService.getWorkoutsByUser(userId);
-    }
-    /* Example request:
-    GET http://localhost:8080/api/workouts/user/123
-    */
+            // Fetch all workouts for the user
+            List<Workout> workouts = workoutRepository.findByUserUserId(user.getUserId());
 
-    // Get workouts by muscle group
-    @GetMapping("/muscle/{muscleGroup}")
-    public List<Workout> getWorkoutsByMuscleGroup(@PathVariable MuscleGroup muscleGroup) {
-        return workoutService.getWorkoutsByMuscleGroup(muscleGroup);
-    }
-    /* Example request:
-    GET http://localhost:8080/api/workouts/muscle/CHEST
-    */
-
-    // Update workout
-    @PutMapping("/{id}")
-    public Workout updateWorkout(@PathVariable Long id, @RequestBody Workout workout) {
-        return workoutService.updateWorkout(id, workout);
-    }
-    /* Example request:
-    PUT http://localhost:8080/api/workouts/123
-    Content-Type: application/json
-    {
-        "workoutName": "Incline Bench Press",
-        "muscleGroup": "CHEST",
-        "sets": 4,
-        "reps": 8,
-        "date": "2024-12-28",
-        "user": {
-            "id": 123
+            return ResponseEntity.ok(workouts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-    */
 
-    // Delete workout
-    @DeleteMapping("/{id}")
-    public void deleteWorkout(@PathVariable Long id) {
-        workoutService.deleteWorkoutById(id);
+    // Get a workout by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Workout> getWorkoutById(@PathVariable Long id, Principal principal) {
+        try {
+            // Get the authenticated user's email from the JWT token
+            String email = principal.getName();
+
+            // Fetch the user from the database
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Fetch the workout by ID
+            Optional<Workout> workout = workoutRepository.findById(id);
+
+            if (workout.isPresent() && workout.get().getUser().getUserId().equals(user.getUserId())) {
+                return ResponseEntity.ok(workout.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
-    /* Example request:
-    DELETE http://localhost:8080/api/workouts/123
-    */
+
+    // Update a workout
+    @PutMapping("/{id}")
+    public ResponseEntity<Workout> updateWorkout(@PathVariable Long id, @RequestBody Workout workoutDetails, Principal principal) {
+        try {
+            // Get the authenticated user's email from the JWT token
+            String email = principal.getName();
+
+            // Fetch the user from the database
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Fetch the workout by ID
+            Optional<Workout> workoutOptional = workoutRepository.findById(id);
+
+            if (workoutOptional.isPresent() && workoutOptional.get().getUser().getUserId().equals(user.getUserId())) {
+                Workout workout = workoutOptional.get();
+
+                // Update workout details
+                workout.setWorkoutName(workoutDetails.getWorkoutName());
+                workout.setMuscleGroup(workoutDetails.getMuscleGroup());
+                workout.setSets(workoutDetails.getSets());
+                workout.setReps(workoutDetails.getReps());
+                workout.setWeight(workoutDetails.getWeight());
+                workout.setDate(workoutDetails.getDate());
+
+                // Save the updated workout
+                Workout updatedWorkout = workoutRepository.save(workout);
+
+                return ResponseEntity.ok(updatedWorkout);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    // Delete a workout
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteWorkout(@PathVariable Long id, Principal principal) {
+        try {
+            // Get the authenticated user's email from the JWT token
+            String email = principal.getName();
+
+            // Fetch the user from the database
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Fetch the workout by ID
+            Optional<Workout> workoutOptional = workoutRepository.findById(id);
+
+            if (workoutOptional.isPresent() && workoutOptional.get().getUser().getUserId().equals(user.getUserId())) {
+                // Delete the workout
+                workoutRepository.deleteById(id);
+
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Workout>> getWorkoutsByUser(@PathVariable Long userId, Principal principal) {
+        try {
+            // Get the authenticated user's email from the JWT token
+            String email = principal.getName();
+
+            // Fetch the user from the database
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Fetch all workouts for the user
+            List<Workout> workouts = workoutRepository.findByUserUserId(user.getUserId());
+
+            return ResponseEntity.ok(workouts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/timeline")
+    public ResponseEntity<Page<Workout>> getTimeline(@RequestParam(defaultValue = "0") int page) {
+        Pageable pageable = PageRequest.of(page, 10); // 10 items per page
+        Page<Workout> workouts = workoutRepository.findAllWithUser(pageable);
+        return ResponseEntity.ok(workouts);
+    }
 }

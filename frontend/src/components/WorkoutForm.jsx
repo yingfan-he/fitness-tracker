@@ -1,35 +1,60 @@
 import { useState, useEffect } from 'react';
 import workoutService from "../services/workoutService.js";
+import axios from 'axios';
 
 function WorkoutForm() {
+    const [userId, setUserId] = useState(null);
     const [formData, setFormData] = useState({
         workoutName: '',
         muscleGroup: '',
         sets: 0,
         reps: 0,
         weight: 0,
-        date: new Date().toISOString().split('T')[0],
-        user: {
-            userId: 1
-        }
+        date: new Date().toISOString().split('T')[0]
     });
-
     const [message, setMessage] = useState(null);
     const [workouts, setWorkouts] = useState([]);
     const [muscleFilter, setMuscleFilter] = useState('ALL');
-    const [showWeight, setShowWeight] = useState(false); // New state for toggling weight input
+    const [showWeight, setShowWeight] = useState(false);
 
     useEffect(() => {
-        loadWorkouts();
+        const fetchCurrentUser = async () => {
+            try {
+                const token = localStorage.getItem('jwt');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+
+                const response = await axios.get('http://localhost:8080/api/users/current', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setUserId(response.data.userId);
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+                if (error.response && error.response.status === 403) {
+                    localStorage.removeItem('jwt'); // Clear the expired token
+                    window.location.href = '/login'; // Redirect to login page
+                }
+            }
+        };
+
+        fetchCurrentUser();
     }, []);
+
+    useEffect(() => {
+        if (userId) {
+            loadWorkouts();
+        }
+    }, [userId]);
 
     const loadWorkouts = async () => {
         try {
-            const response = await workoutService.getWorkoutsByUser(1);
-            setWorkouts(response);
+            const response = await workoutService.getWorkoutsByUser(userId);
+            setWorkouts(response.data);
         } catch (error) {
             console.error('Failed to load workouts:', error);
-            setMessage({ type: 'error', text: 'Failed to load workouts.' });
         }
     };
 
@@ -46,19 +71,20 @@ function WorkoutForm() {
         setMessage(null);
 
         if (formData.sets <= 0 || formData.reps <= 0) {
-            setMessage({ type: 'error', text: 'Sets and reps must be positive numbers'});
+            setMessage({ type: 'error', text: 'Sets and reps must be positive numbers' });
             return;
         }
+
         try {
             await workoutService.createWorkout(formData);
             setMessage({ type: 'success', text: 'Workout added successfully!' });
             setFormData({
-                ...formData,
                 workoutName: '',
                 muscleGroup: '',
                 sets: 0,
                 reps: 0,
-                weight: 0
+                weight: 0,
+                date: new Date().toISOString().split('T')[0]
             });
             loadWorkouts();
         } catch (error) {

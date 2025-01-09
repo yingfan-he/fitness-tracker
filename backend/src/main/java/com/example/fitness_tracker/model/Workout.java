@@ -1,12 +1,11 @@
 package com.example.fitness_tracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 
 @Entity
 @Data
@@ -28,7 +27,7 @@ public class Workout {
     @Column(nullable = false)
     private int reps;
 
-    @JsonBackReference
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -63,7 +62,7 @@ public class Workout {
         this.date = date;
     }
 
+    public void setUserId(Long userId) {
 
-
-
+    }
 }

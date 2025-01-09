@@ -36,8 +36,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))  // Use the injected bean
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/**").permitAll() // Allow unauthenticated access to auth endpoints
+                        .requestMatchers("/api/workouts/timeline").permitAll() // Allow unauthenticated access to the timeline endpoint
+                        .anyRequest().authenticated() // Secure all other endpoints
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

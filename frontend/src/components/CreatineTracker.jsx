@@ -2,26 +2,54 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function CreatineTracker() {
+    const [userId, setUserId] = useState(null);
     const [creatineData, setCreatineData] = useState({
         date: new Date().toISOString().split('T')[0],
         taken: false,
-        user: {
-            userId: 1
-        }
+        user: null
     });
     const [history, setHistory] = useState([]);
 
-    // Load history when component mounts
+    // Fetch the current user's ID when the component mounts
     useEffect(() => {
-        loadCreatineHistory();
+        const fetchCurrentUser = async () => {
+            try {
+                const token = localStorage.getItem('jwt');
+                if (!token) {
+                    throw new Error('No token found');
+                }
+
+                const response = await axios.get('http://localhost:8080/api/users/current', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setUserId(response.data.userId);
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+                if (error.response && error.response.status === 403) {
+                    localStorage.removeItem('jwt'); // Clear the expired token
+                    window.location.href = '/login'; // Redirect to login page
+                }
+            }
+        };
+
+        fetchCurrentUser();
     }, []);
+
+    // Load creatine history when the component mounts or userId changes
+    useEffect(() => {
+        if (userId) {
+            loadCreatineHistory();
+        }
+    }, [userId]);
 
     const loadCreatineHistory = async () => {
         try {
             const token = localStorage.getItem('jwt');
-            const response = await axios.get('http://localhost:8080/api/creatine/user/1', {
+            const response = await axios.get(`http://localhost:8080/api/creatine/user/${userId}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
             });
 
@@ -50,10 +78,10 @@ function CreatineTracker() {
             const token = localStorage.getItem('jwt');
             const response = await axios.post(
                 "http://localhost:8080/api/creatine",
-                {...creatineData, taken: !creatineData.taken},
+                { ...creatineData, taken: !creatineData.taken, user: { userId } },
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        Authorization: `Bearer ${token}`
                     }
                 }
             );

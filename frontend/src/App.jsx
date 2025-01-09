@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import AuthPage from "./components/AuthPage.jsx";
 import UserGreeting from "./components/UserGreeting.jsx";
 import {AuthProvider} from "./components/AuthContext.jsx";
+import TimelinePage from "./pages/TimelinePage.jsx";
 
 
 

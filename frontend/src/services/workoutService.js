@@ -1,51 +1,27 @@
+// workoutService.js
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8080/api/workouts';
+const API_URL = 'http://localhost:8080/api/workouts';
 
-const workoutService = {
-    // Create a new workout
-    createWorkout: async (workoutData) => {
-        const token = localStorage.getItem('jwt');
-        const response = await axios.post(BASE_URL, workoutData, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return response.data;
-    },
-
-    // Get all workouts for a user
-    getWorkoutsByUser: async (userId) => {
-        const token = localStorage.getItem('jwt');
-        const response = await axios.get(`${BASE_URL}/user/${userId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return response.data;
-    },
-
-    // Get workouts by muscle group
-    getWorkoutsByMuscleGroup: async (muscleGroup) => {
-        const token = localStorage.getItem('jwt');
-        const response = await axios.get(`${BASE_URL}/muscle/${muscleGroup}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return response.data;
-    },
-
-    // Delete workout
-    deleteWorkout: async (workoutId) => {
-        const token = localStorage.getItem('jwt');
-        const response = await axios.delete(`${BASE_URL}/${workoutId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return response.data;
-    }
+const getAuthHeader = () => {
+    const token = localStorage.getItem('jwt');
+    return { headers: { Authorization: `Bearer ${token}` } };
 };
 
-export default workoutService;
+const createWorkout = async (workoutData) => {
+    return axios.post(API_URL, workoutData, getAuthHeader());
+};
+
+const getWorkoutsByUser = async (userId) => {
+    return axios.get(`${API_URL}/user/${userId}`, getAuthHeader());
+};
+
+const deleteWorkout = async (workoutId) => {
+    return axios.delete(`${API_URL}/${workoutId}`, getAuthHeader());
+};
+
+export default {
+    createWorkout,
+    getWorkoutsByUser,
+    deleteWorkout
+};

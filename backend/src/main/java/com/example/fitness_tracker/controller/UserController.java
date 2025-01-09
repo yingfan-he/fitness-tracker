@@ -94,8 +94,9 @@ Content-Type: application/json
 
     /* GET http://localhost:8080/api/users/email/john.doe@email.com */
 
-    @GetMapping("/current")  // get the unique username of whoever is authenticated with Spring Security
+    @GetMapping("/current")  //  returns  User object of whoever is currently signed in
     public User getCurrentUser(Principal principal) {
         return userService.getUserByEmail(principal.getName());
     }
+
 }
