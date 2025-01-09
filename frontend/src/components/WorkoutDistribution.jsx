@@ -3,13 +3,15 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext.jsx';
+import workoutService from "../services/workoutService.js";
 
 function WorkoutDistribution() {
+    const [userId, setUserId] = useState(null);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const { isLoggedIn, logout } = useAuth();
+    const { logout } = useAuth();
 
     const COLORS = {
         CHEST: '#3B82F6',
@@ -21,27 +23,44 @@ function WorkoutDistribution() {
         CORE: '#EF4444'
     };
 
+    // First fetch the current user's ID
     useEffect(() => {
-        const fetchWorkoutData = async () => {
+        const fetchCurrentUser = async () => {
             try {
                 const token = localStorage.getItem('jwt');
                 if (!token) {
-                    setError('Please log in to view statistics');
-                    setTimeout(() => {
-                        navigate('/auth');
-                    }, 2000);
-                    return;
+                    throw new Error('No token found');
                 }
 
-                // Using the same endpoint that works in your workout page
-                const response = await axios.get('http://localhost:8080/api/workouts/timeline', {
+                const response = await axios.get('http://localhost:8080/api/users/current', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        Authorization: `Bearer ${token}`
                     }
                 });
+                setUserId(response.data.userId);
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+                if (error.response?.status === 403) {
+                    localStorage.removeItem('jwt');
+                    logout();
+                    navigate('/auth');
+                }
+            }
+        };
 
-                // Process the workout data from the content array
-                const workouts = response.data.content;
+        fetchCurrentUser();
+    }, [navigate, logout]);
+
+    // Then fetch the user's workouts once we have their ID
+    useEffect(() => {
+        const loadWorkoutData = async () => {
+            if (!userId) return;
+
+            try {
+                const response = await workoutService.getWorkoutsByUser(userId);
+                const workouts = response.data;
+
+                // Process the workout data
                 const muscleGroupCounts = workouts.reduce((acc, workout) => {
                     acc[workout.muscleGroup] = (acc[workout.muscleGroup] || 0) + 1;
                     return acc;
@@ -58,27 +77,16 @@ function WorkoutDistribution() {
                 setData(chartData);
                 setLoading(false);
             } catch (error) {
-                console.error('Error fetching workout data:', error);
-
-                if (error.response?.status === 403 || error.response?.status === 401) {
-                    setError('Session expired. Please log in again.');
-                    localStorage.removeItem('jwt');
-                    logout();
-                    setTimeout(() => {
-                        navigate('/auth');
-                    }, 2000);
-                    return;
-                }
-
-                setError('Failed to load workout distribution. Please try again later.');
+                console.error('Failed to load workouts:', error);
+                setError('Failed to load workout distribution');
                 setLoading(false);
             }
         };
 
-        if (isLoggedIn) {
-            fetchWorkoutData();
+        if (userId) {
+            loadWorkoutData();
         }
-    }, [navigate, logout, isLoggedIn]);
+    }, [userId]);
 
     if (loading) {
         return (
