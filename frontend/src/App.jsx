@@ -9,7 +9,9 @@ import RegisterPage from "./pages/RegisterPage";
 import AuthPage from "./components/AuthPage.jsx";
 import UserGreeting from "./components/UserGreeting.jsx";
 import {AuthProvider} from "./components/AuthContext.jsx";
+import './index.css';
 import TimelinePage from "./pages/TimelinePage.jsx";
+import Statistics from "./pages/Statistics.jsx";
 
 
 
@@ -28,6 +30,7 @@ function App() {
         <AuthProvider>
         <Router>
             <div>
+
                 <UserGreeting />
                 {/* Navbar will appear on every page */}
                 <Navbar />
@@ -42,7 +45,7 @@ function App() {
                     <Route path="/workouts" element={<WorkoutsPage />} />
                     <Route path="/creatine" element={<CreatinePage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                </Routes>
+                    <Route path="/statistics" element={<Statistics />} /></Routes>
             </div>
         </Router>
         </AuthProvider>

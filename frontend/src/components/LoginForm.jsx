@@ -38,30 +38,52 @@ function LoginForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label>Email:</label>
-                <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
+                <div>
+                    <label className="text-white text-sm mb-1 block">
+                        Email:
+                    </label>
+                    <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        placeholder="Enter your email"
+                    />
+                </div>
+
+                <div>
+                    <label className="text-white text-sm mb-1 block">
+                        Password:
+                    </label>
+                    <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        placeholder="Enter your password"
+                    />
+                </div>
             </div>
-            <div>
-                <label>Password:</label>
-                <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
-            </div>
-            <button type="submit">Login</button>
+
+            <button
+                type="submit"
+                className="w-full bg-blue-500 text-white rounded-lg p-2 mt-4 hover:bg-blue-600 transition-colors font-medium"
+            >
+                Login
+            </button>
+
             {message && (
-                <div style={{ color: message.type === 'success' ? 'green' : 'red' }}>
+                <div className={`mt-4 p-3 rounded-lg ${
+                    message.type === 'success'
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-red-500/20 text-red-400'
+                }`}>
                     {message.text}
                 </div>
             )}

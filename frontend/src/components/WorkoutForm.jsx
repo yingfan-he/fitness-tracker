@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import workoutService from "../services/workoutService.js";
 import axios from 'axios';
+import { Trash2 } from 'lucide-react';
 
 function WorkoutForm() {
     const [userId, setUserId] = useState(null);
@@ -10,7 +11,7 @@ function WorkoutForm() {
         sets: 0,
         reps: 0,
         weight: 0,
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0] // Default to today's date in YYYY-MM-DD format
     });
     const [message, setMessage] = useState(null);
     const [workouts, setWorkouts] = useState([]);
@@ -76,17 +77,45 @@ function WorkoutForm() {
         }
 
         try {
-            await workoutService.createWorkout(formData);
+            // Get the date from the form input
+            const selectedDate = new Date(formData.date);
+
+            // Get the current time
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            // Set the time on the selected date
+            selectedDate.setHours(hours);
+            selectedDate.setMinutes(minutes);
+            selectedDate.setSeconds(seconds);
+
+            // Convert to UTC
+            const utcDate = selectedDate.toISOString();
+
+            // Send the workout data to the backend
+            await workoutService.createWorkout({
+                ...formData,
+                date: utcDate // Use the UTC date with the current time
+            });
+
+            // Show success message
             setMessage({ type: 'success', text: 'Workout added successfully!' });
+
+            // Reset the form
             setFormData({
                 workoutName: '',
                 muscleGroup: '',
                 sets: 0,
                 reps: 0,
                 weight: 0,
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0] // Reset to today's date
             });
+
+            // Reload workouts
             loadWorkouts();
+            console.log('Date being sent to backend:', utcDate);
         } catch (error) {
             setMessage({ type: 'error', text: 'Failed to add workout. Please try again.' });
         }
@@ -160,113 +189,133 @@ function WorkoutForm() {
         borderRadius: '4px',
         textAlign: 'center'
     };
-
     return (
-        <div>
-            <form onSubmit={handleSubmit} style={formStyle}>
-                <div>
-                    <label>Workout Name:</label>
-                    <input
-                        type="text"
-                        name="workoutName"
-                        value={formData.workoutName}
-                        onChange={handleChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
+        <div className="space-y-8">
+            {/* Add Workout Form */}
+            <form onSubmit={handleSubmit} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-gray-300 mb-1">Workout Name:</label>
+                        <input
+                            type="text"
+                            name="workoutName"
+                            value={formData.workoutName}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        />
+                    </div>
 
-                <div>
-                    <label>Muscle Group:</label>
-                    <select
-                        name="muscleGroup"
-                        value={formData.muscleGroup}
-                        onChange={handleChange}
-                        required
-                        style={inputStyle}
-                    >
-                        <option value="">Select muscle group...</option>
-                        <option value="CHEST">Chest</option>
-                        <option value="BACK">Back</option>
-                        <option value="BICEPS">Biceps</option>
-                        <option value="TRICEPS">Triceps</option>
-                        <option value="SHOULDERS">Shoulders</option>
-                        <option value="LEGS">Legs</option>
-                        <option value="CORE">Core</option>
-                    </select>
-                </div>
+                    <div>
+                        <label className="block text-gray-300 mb-1">Muscle Group:</label>
+                        <select
+                            name="muscleGroup"
+                            value={formData.muscleGroup}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        >
+                            <option value="">Select muscle group...</option>
+                            <option value="CHEST">Chest</option>
+                            <option value="BACK">Back</option>
+                            <option value="BICEPS">Biceps</option>
+                            <option value="TRICEPS">Triceps</option>
+                            <option value="SHOULDERS">Shoulders</option>
+                            <option value="LEGS">Legs</option>
+                            <option value="CORE">Core</option>
+                        </select>
+                    </div>
 
-                <div>
-                    <label>Sets:</label>
-                    <input
-                        type="number"
-                        name="sets"
-                        min="0"
-                        value={formData.sets}
-                        onChange={handleChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
+                    <div>
+                        <label className="block text-gray-300 mb-1">Sets:</label>
+                        <input
+                            type="number"
+                            name="sets"
+                            min="0"
+                            value={formData.sets}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        />
+                    </div>
 
-                <div>
-                    <label>Reps:</label>
-                    <input
-                        type="number"
-                        name="reps"
-                        min="0"
-                        value={formData.reps}
-                        onChange={handleChange}
-                        required
-                        style={inputStyle}
-                    />
-                </div>
+                    <div>
+                        <label className="block text-gray-300 mb-1">Reps:</label>
+                        <input
+                            type="number"
+                            name="reps"
+                            min="0"
+                            value={formData.reps}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        />
+                    </div>
 
-                <div>
-                    <label>
+                    <div className="flex items-center gap-2">
                         <input
                             type="checkbox"
                             checked={showWeight}
                             onChange={() => setShowWeight(!showWeight)}
+                            className="w-4 h-4 rounded border-gray-700 bg-gray-900/50"
                         />
-                        Include Weight
-                    </label>
-                </div>
+                        <label className="text-gray-300">Include Weight</label>
+                    </div>
 
-                {showWeight && (
+                    {showWeight && (
+                        <div>
+                            <label className="block text-gray-300 mb-1">Weight:</label>
+                            <input
+                                type="number"
+                                name="weight"
+                                value={formData.weight}
+                                onChange={handleChange}
+                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                            />
+                        </div>
+                    )}
+
                     <div>
-                        <label>Weight:</label>
+                        <label className="block text-gray-300 mb-1">Date:</label>
                         <input
-                            type="number"
-                            name="weight"
-                            value={formData.weight}
+                            type="date"
+                            name="date"
+                            value={formData.date}
                             onChange={handleChange}
-                            style={inputStyle}
+                            required
+                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
                         />
                     </div>
-                )}
 
-                <button type="submit" style={buttonStyle}>Add Workout</button>
+                    <button
+                        type="submit"
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-4 py-2 font-medium transition-colors"
+                    >
+                        Add Workout
+                    </button>
 
-                {message && (
-                    <div style={{
-                        ...messageStyle,
-                        backgroundColor: message.type === 'success' ? '#dff0d8' : '#f2dede',
-                        color: message.type === 'success' ? '#3c763d' : '#a94442'
-                    }}>
-                        {message.text}
-                    </div>
-                )}
+                    {message && (
+                        <div className={`p-3 rounded-lg text-center ${
+                            message.type === 'success'
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-red-500/20 text-red-400'
+                        }`}>
+                            {message.text}
+                        </div>
+                    )}
+                </div>
             </form>
 
-            <div style={formStyle}>
-                <h2>Workout History</h2>
-                <div style={{ marginBottom: '20px' }}>
-                    <label>Filter by Muscle Group: </label>
+            {/* Workout History */}
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
+                <h2 className="text-xl font-semibold text-white mb-4">Workout History</h2>
+
+                <div className="mb-4">
+                    <label className="block text-gray-300 mb-1">Filter by Muscle Group:</label>
                     <select
                         value={muscleFilter}
                         onChange={(e) => setMuscleFilter(e.target.value)}
-                        style={inputStyle}
+                        className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition-colors"
                     >
                         <option value="ALL">All</option>
                         <option value="CHEST">Chest</option>
@@ -279,40 +328,51 @@ function WorkoutForm() {
                     </select>
                 </div>
 
-                <table style={tableStyle}>
-                    <thead>
-                    <tr>
-                        <th style={cellStyle}>Date</th>
-                        <th style={cellStyle}>Workout</th>
-                        <th style={cellStyle}>Muscle Group</th>
-                        <th style={cellStyle}>Sets</th>
-                        <th style={cellStyle}>Reps</th>
-                        <th style={cellStyle}>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {filteredAndSortedWorkouts.map(workout => (
-                        <tr key={workout.workoutId}>
-                            <td style={cellStyle}>{new Date(workout.date).toLocaleDateString()}</td>
-                            <td style={cellStyle}>{workout.workoutName}</td>
-                            <td style={cellStyle}>{workout.muscleGroup}</td>
-                            <td style={cellStyle}>{workout.sets}</td>
-                            <td style={cellStyle}>{workout.reps}</td>
-                            <td style={cellStyle}>
-                                <button
-                                    onClick={() => handleDelete(workout.workoutId)}
-                                    style={deleteButtonStyle}
-                                >
-                                    Delete
-                                </button>
-                            </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                        <tr className="border-b border-gray-700">
+                            <th className="text-left py-3 px-4 text-gray-400 font-medium">Date</th>
+                            <th className="text-left py-3 px-4 text-gray-400 font-medium">Workout</th>
+                            <th className="text-left py-3 px-4 text-gray-400 font-medium">Muscle Group</th>
+                            <th className="text-left py-3 px-4 text-gray-400 font-medium">Sets</th>
+                            <th className="text-left py-3 px-4 text-gray-400 font-medium">Reps</th>
+                            <th className="text-left py-3 px-4 text-gray-400 font-medium">Actions</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {filteredAndSortedWorkouts.map(workout => (
+                            <tr key={workout.workoutId} className="border-b border-gray-700/50">
+                                <td className="py-3 px-4 text-gray-300">
+                                    {new Date(workout.date).toLocaleString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
+                                </td>
+                                <td className="py-3 px-4 text-gray-300">{workout.workoutName}</td>
+                                <td className="py-3 px-4 text-gray-300">{workout.muscleGroup}</td>
+                                <td className="py-3 px-4 text-gray-300">{workout.sets}</td>
+                                <td className="py-3 px-4 text-gray-300">{workout.reps}</td>
+                                <td className="py-3 px-4">
+                                    <button
+                                        onClick={() => handleDelete(workout.workoutId)}
+                                        className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
 }
+
 
 export default WorkoutForm;

@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Enable backdrop filters globally */
+.backdrop-blur-xl {
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+}
+
+/* Optional: Add system font stack for iOS-like typography */
+:root {
+    --font-sans: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure the background color extends fully */
+#root {
+    min-height: 100vh;
+    background-color: #000000;
+}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
+import { LogOut, User } from 'lucide-react';
 
 function UserGreeting() {
     const [userName, setUserName] = useState('');
@@ -42,27 +43,23 @@ function UserGreeting() {
     }
 
     return (
-        <div style={{
-            position: 'absolute',
-            top: '10px',
-            right: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-        }}>
-            <span>Hi, {userName}</span>
+        <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
+            {/* User Info */}
+            <div className="flex items-center gap-2 bg-gray-800/80 backdrop-blur-lg px-4 py-2 rounded-full border border-gray-700">
+                <User size={16} className="text-gray-400" />
+                <span className="text-gray-200 font-medium">
+                    {userName}
+                </span>
+            </div>
+
+            {/* Sign Out Button */}
             <button
                 onClick={handleSignOut}
-                style={{
-                    padding: '5px 10px',
-                    cursor: 'pointer',
-                    backgroundColor: '#ff4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px'
-                }}
+                className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400
+                         px-4 py-2 rounded-full border border-red-500/30 transition-colors duration-200"
             >
-                Sign Out
+                <LogOut size={16} />
+                <span className="font-medium">Sign Out</span>
             </button>
         </div>
     );

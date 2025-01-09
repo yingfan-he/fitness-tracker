@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Check, X } from 'lucide-react';
 
 function CreatineTracker() {
     const [userId, setUserId] = useState(null);
@@ -28,8 +29,8 @@ function CreatineTracker() {
             } catch (error) {
                 console.error('Failed to fetch user data:', error);
                 if (error.response && error.response.status === 403) {
-                    localStorage.removeItem('jwt'); // Clear the expired token
-                    window.location.href = '/login'; // Redirect to login page
+                    localStorage.removeItem('jwt');
+                    window.location.href = '/login';
                 }
             }
         };
@@ -53,16 +54,14 @@ function CreatineTracker() {
                 }
             });
 
-            // Group by date and get latest entry for each date
             const groupedByDate = response.data.reduce((acc, entry) => {
-                const date = entry.date.split('T')[0];  // Get just the date part
+                const date = entry.date.split('T')[0];
                 if (!acc[date] || entry.creatine_id > acc[date].creatine_id) {
                     acc[date] = entry;
                 }
                 return acc;
             }, {});
 
-            // Convert back to array and sort by date
             const latestEntries = Object.values(groupedByDate).sort((a, b) =>
                 new Date(b.date) - new Date(a.date)
             );
@@ -73,7 +72,7 @@ function CreatineTracker() {
         }
     };
 
-    const handleToggle = async () => {
+    const handleToggleCreatine = async () => {
         try {
             const token = localStorage.getItem('jwt');
             const response = await axios.post(
@@ -97,37 +96,88 @@ function CreatineTracker() {
     };
 
     return (
-        <div>
-            <div>
-                <p>Today's Date: {creatineData.date}</p>
-                <label>
-                    Took Creatine Today:
-                    <input
-                        type="checkbox"
-                        checked={creatineData.taken}
-                        onChange={handleToggle}
-                    />
-                </label>
-            </div>
+        <div className="min-h-screen bg-[#0F1420] text-white p-6">
+            <div className="max-w-2xl mx-auto">
+                {/* Today's Tracker Card */}
+                <div className="bg-gray-800/50 rounded-2xl p-6 backdrop-blur-lg shadow-lg border border-gray-700 mb-8">
+                    <h2 className="text-2xl font-semibold mb-6">Today's Creatine</h2>
 
-            <div>
-                <h3>History</h3>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Taken</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {history.map(entry => (
-                        <tr key={entry.creatine_id}>
-                            <td>{new Date(entry.date).toLocaleDateString()}</td>
-                            <td>{entry.taken ? '✅' : '❌'}</td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <p className="text-gray-300">
+                            {new Date(creatineData.date).toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                        </p>
+
+                        <button
+                            onClick={handleToggleCreatine}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                                creatineData.taken
+                                    ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                                    : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                            }`}
+                        >
+                            {creatineData.taken ? (
+                                <>
+                                    <Check size={20} />
+                                    <span>Taken</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Mark as Taken</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {/* History Section */}
+                <div className="bg-gray-800/50 rounded-2xl p-6 backdrop-blur-lg shadow-lg border border-gray-700">
+                    <h2 className="text-2xl font-semibold mb-6">History</h2>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                            <tr className="border-b border-gray-700">
+                                <th className="text-left py-3 px-4 text-gray-400 font-medium">Date</th>
+                                <th className="text-left py-3 px-4 text-gray-400 font-medium">Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {history.map(entry => (
+                                <tr
+                                    key={entry.creatine_id}
+                                    className="border-b border-gray-700/50 last:border-b-0"
+                                >
+                                    <td className="py-3 px-4 text-gray-300">
+                                        {new Date(entry.date).toLocaleDateString('en-US', {
+                                            weekday: 'short',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        {entry.taken ? (
+                                            <span className="inline-flex items-center gap-1 text-green-400">
+                                                    <Check size={16} />
+                                                    <span>Taken</span>
+                                                </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 text-red-400">
+                                                    <X size={16} />
+                                                    <span>Missed</span>
+                                                </span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     );

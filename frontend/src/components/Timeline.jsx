@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Loader } from 'lucide-react';
 
 const Timeline = () => {
     const [workouts, setWorkouts] = useState([]);
@@ -7,7 +8,6 @@ const Timeline = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
-    // Fetch workouts from the backend
     const fetchWorkouts = async (page = 0) => {
         try {
             const response = await fetch(`http://localhost:8080/api/workouts/timeline?page=${page}`);
@@ -18,8 +18,6 @@ const Timeline = () => {
 
             const data = await response.json();
             console.log('Response data:', data);
-
-            // Update state with the fetched data
             setWorkouts(data.content);
             setTotalPages(data.totalPages);
             setCurrentPage(data.number);
@@ -31,12 +29,10 @@ const Timeline = () => {
         }
     };
 
-    // Fetch workouts when the component mounts or the page changes
     useEffect(() => {
         fetchWorkouts(currentPage);
     }, [currentPage]);
 
-    // Handle pagination
     const handlePreviousPage = () => {
         if (currentPage > 0) {
             fetchWorkouts(currentPage - 1);
@@ -49,113 +45,114 @@ const Timeline = () => {
         }
     };
 
-    // Loading state
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex items-center justify-center p-8 text-blue-400">
+                <Loader className="animate-spin mr-2" size={24} />
+                <span>Loading workouts...</span>
+            </div>
+        );
     }
 
-    // Error state
     if (error) {
-        return <div>Error: {error}</div>;
+        return (
+            <div className="bg-red-500/20 text-red-400 p-4 rounded-xl text-center">
+                Error: {error}
+            </div>
+        );
     }
 
     return (
-        <div style={styles.timeline}>
-            <h2 style={styles.heading}>Workout Timeline</h2>
+        <div className="max-w-4xl mx-auto p-6">
             {workouts.length > 0 ? (
                 <>
-                    <ul style={styles.workoutList}>
+                    <div className="space-y-4">
                         {workouts.map((workout) => (
-                            <li key={workout.workoutId} style={styles.workoutItem}>
-                                <h3 style={styles.workoutName}>{workout.workoutName}</h3>
-                                <p><strong>Muscle Group:</strong> {workout.muscleGroup}</p>
-                                <p><strong>Sets:</strong> {workout.sets}</p>
-                                <p><strong>Reps:</strong> {workout.reps}</p>
-                                <p><strong>Weight:</strong> {workout.weight} lbs</p>
-                                <p><strong>Date:</strong> {new Date(workout.date).toLocaleString()}</p>
-                            </li>
+                            <div
+                                key={workout.workoutId}
+                                className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-6 border border-gray-700/50"
+                            >
+                                {/* Workout Name */}
+                                <h3 className="text-blue-400 text-lg font-medium mb-3">
+                                    {workout.workoutName}
+                                </h3>
+
+                                {/* Workout Details */}
+                                <div className="space-y-2 text-gray-300">
+                                    <p className="flex items-center">
+                                        <span className="text-gray-400">Muscle Group:</span>
+                                        <span className="ml-2">{workout.muscleGroup}</span>
+                                    </p>
+
+                                    <p className="flex items-center">
+                                        <span className="text-gray-400">Sets:</span>
+                                        <span className="ml-2">{workout.sets}</span>
+                                    </p>
+
+                                    <p className="flex items-center">
+                                        <span className="text-gray-400">Reps:</span>
+                                        <span className="ml-2">{workout.reps}</span>
+                                    </p>
+
+                                    {workout.weight > 0 && (
+                                        <p className="flex items-center">
+                                            <span className="text-gray-400">Weight:</span>
+                                            <span className="ml-2">{workout.weight} lbs</span>
+                                        </p>
+                                    )}
+
+                                    <p className="flex items-center text-sm text-gray-400 mt-4">
+                                        {new Date(workout.date).toLocaleString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
                         ))}
-                    </ul>
-                    <div style={styles.pagination}>
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex justify-center items-center gap-4 mt-8">
                         <button
-                            style={styles.paginationButton}
                             onClick={handlePreviousPage}
                             disabled={currentPage === 0}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                currentPage === 0
+                                    ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                            }`}
                         >
                             Previous
                         </button>
-                        <span style={styles.pageInfo}>Page {currentPage + 1} of {totalPages}</span>
+
+                        <span className="text-gray-400">
+                            Page {currentPage + 1} of {totalPages}
+                        </span>
+
                         <button
-                            style={styles.paginationButton}
                             onClick={handleNextPage}
                             disabled={currentPage === totalPages - 1}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                currentPage === totalPages - 1
+                                    ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                            }`}
                         >
                             Next
                         </button>
                     </div>
                 </>
             ) : (
-                <p style={styles.noWorkouts}>No workouts found.</p>
+                <div className="text-center text-gray-400 py-8">
+                    No workouts found.
+                </div>
             )}
         </div>
     );
-};
-
-// Inline styles
-const styles = {
-    timeline: {
-        maxWidth: '800px',
-        margin: '0 auto',
-        padding: '20px',
-        fontFamily: 'Arial, sans-serif',
-    },
-    heading: {
-        textAlign: 'center',
-        marginBottom: '20px',
-        color: '#333',
-    },
-    workoutList: {
-        listStyle: 'none',
-        padding: '0',
-    },
-    workoutItem: {
-        backgroundColor: '#f9f9f9',
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        padding: '15px',
-        marginBottom: '15px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    },
-    workoutName: {
-        marginTop: '0',
-        color: '#007bff',
-    },
-    pagination: {
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: '20px',
-    },
-    paginationButton: {
-        margin: '0 10px',
-        padding: '5px 10px',
-        cursor: 'pointer',
-        backgroundColor: '#007bff',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '4px',
-    },
-    paginationButtonDisabled: {
-        backgroundColor: '#ccc',
-        cursor: 'not-allowed',
-    },
-    pageInfo: {
-        margin: '0 10px',
-    },
-    noWorkouts: {
-        textAlign: 'center',
-        color: '#666',
-    },
 };
 
 export default Timeline;
